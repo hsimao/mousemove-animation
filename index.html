@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .content {
+        box-sizing: border-box;
+        width: 2000px;
+        height: 1500px;
+        border: solid 50px red;
+        position: absolute;
+        /* top: 50%; */
+        /* left: 50%; */
+        /* transform: translate(-1410px, -1175px); */
+        will-change: transform;
+        background: linear-gradient(45deg, #262626 25%, transparent 25%),
+          linear-gradient(-45deg, #262626 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #262626 75%),
+          linear-gradient(-45deg, transparent 75%, #262626 75%);
+        background-size: 100px 100px;
+        background-position: 0 0, 50px 50px;
+      }
+
+      .box {
+        /* transition: all 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); */
+        /* transition: all 3s ease; */
+
+        position: relative;
+        width: 100px;
+        height: 100px;
+        background-color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content" data-depth="0.2" data-scalar-x="10"></div>
+      <div class="box"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/victor/1.1.0/victor.min.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>
