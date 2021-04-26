@@ -1,9 +1,26 @@
 const box = document.querySelector(".box");
-const content = document.querySelector(".content");
+const $container = document.querySelector(".container");
+const $content = document.querySelector(".content");
 
-const mouseVector = new Victor(0, 0);
+console.warn("$container width", $container.clientWidth);
+console.warn("$content width", $content.clientWidth);
 
-console.warn("mouseVector", mouseVector);
+const makeRang = (min, max, bands, n) =>
+  Math.floor((bands * (n - min)) / (max - min + 1));
+
+// const band = n => makeRang(0, 100, 5, n);
+// console.log(band(0),  band(20));  // 0 0
+// console.log(band(21), band(40));  // 1 1
+// console.log(band(41), band(60));  // 2 2
+// console.log(band(61), band(80));  // 3 3
+// console.log(band(81), band(100)); // 4 4
+
+function getCenterPosition(dom) {
+  return {
+    x: dom.clientWidth / 2,
+    y: dom.clientHeight / 2,
+  };
+}
 
 const debounce = (fn, ms) => {
   let timeout;
@@ -18,61 +35,87 @@ let position = {
   y: 0,
 };
 
-console.warn("content", content.clientWidth);
-
-const handleMouseMove = (event) => {
-  const { pageX, pageY } = event;
-
-  const distance = getDistance(position.x, position.y, pageX, pageY);
-  const currentVictor = new Victor(pageX, pageY);
-  const x = currentVictor.x - mouseVector.x;
-  const y = currentVictor.y - mouseVector.y;
-  console.warn("currentVictor.x", currentVictor.x);
-  console.warn("mouseVector.x", mouseVector.x);
-
-  // const distanceVector = mouseVector.distance(new Victor(pageX, pageY));
-
-  mouseVector.add(new Victor(x, y));
-  console.warn("mouseVector.x after", mouseVector.x);
-
-  console.warn("pageX", pageX);
-  console.warn("distanceVector", mouseVector.distance(new Victor(x, y)));
-  console.warn("distance", distance);
-
-  position.x = pageX;
-  position.y = pageY;
-
-  gsap.to(content, {
-    x: mouseVector.x,
-    y: mouseVector.y,
-    ease: Power2.easeOut,
-    duration: 4,
-  });
-
-  // content.style.transform = `translate(${mouseVector.x}px, ${mouseVector.y}px)`;
-
-  // box.style.left = `${pageX}px`;
-  // box.style.top = `${pageY}px`;
-  // gsap.to(box, {
-  //   x: pageX,
-  //   y: pageY,
-  //   ease: Power2.easeOut,
-  //   duration: 4,
-  // });
-};
-window.addEventListener("mousemove", debounce(handleMouseMove, 50));
-
-function handleUpdatePosition(event) {
-  const { pageX, pageY } = event;
-  const result = getDistance(position.x, position.y, pageX, pageY);
-  console.warn("result", result);
-
-  position.x = pageX;
-  position.y = pageY;
-  console.warn("position", position);
+// 驗證觸發範圍
+function validateScope(content, x, y) {
+  const formatX = x - content.offsetLeft;
+  const formatY = y - content.offsetTop;
+  if (
+    formatX >= content.clientWidth ||
+    formatX <= 0 ||
+    formatY >= content.clientHeight ||
+    formatY <= 0
+  ) {
+    return false;
+  }
+  return true;
 }
 
-window.addEventListener("click", handleUpdatePosition);
+function getOffsetByRang(value, min, max, count) {
+  const band = (n) => makeRang(min, max, count, n);
+  return band(value);
+}
+
+function getExceedSize(layout, content) {
+  return {
+    width: content.clientWidth - layout.clientWidth,
+    height: content.clientHeight - layout.clientHeight,
+  };
+}
+
+const handleMouseMove = (event) => {
+  const { pageX, pageY, offsetX, offsetY } = event;
+  const valid = validateScope($container, pageX, pageY);
+
+  if (!valid) return;
+
+  const { x: centerX, y: centerY } = getCenterPosition($container);
+
+  updateMouse(pageX, pageY, `x: ${offsetX}, y: ${offsetY}`);
+
+  const { width: exceedWidth, height: exceedHeight } = getExceedSize(
+    $container,
+    $content
+  );
+
+  const rangOffsetX = this.getOffsetByRang(
+    offsetX,
+    0,
+    $container.clientWidth,
+    exceedWidth
+  );
+  const rangOffsetY = this.getOffsetByRang(
+    offsetY,
+    0,
+    $container.clientHeight,
+    exceedHeight
+  );
+
+  // 反方向移動
+  // gsap.to(content, {
+  //   x: -(offsetX - centerX),
+  //   y: -(offsetY - centerY),
+  //   ease: Power2.easeOut,
+  // });
+
+  // 反方向移動可移動的比例 px
+  let finalOffsetX = rangOffsetX;
+  let finalOffsetY = rangOffsetY;
+
+  if (offsetX > centerX) {
+    finalOffsetX * -1;
+  }
+  if (offsetY > centerY) {
+    finalOffsetY * -1;
+  }
+
+  gsap.to($content, {
+    x: -finalOffsetX + exceedWidth / 2,
+    y: -finalOffsetY + exceedHeight / 2,
+    ease: Power2.easeOut,
+  });
+};
+
+$container.addEventListener("mousemove", debounce(handleMouseMove, 10));
 
 function getDistance(x1, y1, x2, y2) {
   const a = x1 - x2;
@@ -82,10 +125,13 @@ function getDistance(x1, y1, x2, y2) {
   return result;
 }
 
-function getPositon(x, y, distance) {
-  const a = x1 - x2;
-  const b = y1 - y2;
-  var result = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+function updateMouse(x, y, text) {
+  const $mouse = document.getElementById("mouse");
+  gsap.to($mouse, {
+    x: x - $mouse.clientWidth / 2,
+    y: y - $mouse.clientHeight / 2,
+    ease: Power2.easeOut,
+  });
 
-  return result;
+  $mouse.querySelector("span").innerText = text;
 }

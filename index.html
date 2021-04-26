@@ -12,48 +12,76 @@
       }
 
       .container {
-        width: 100vw;
-        height: 100vh;
+        width: calc(100% - 200px);
+        height: calc(100% - 200px);
         position: absolute;
         display: flex;
         justify-content: center;
         align-items: center;
         overflow: hidden;
+        margin: 100px;
+        border: solid 5px black;
+        box-sizing: border-box;
       }
 
       .content {
         box-sizing: border-box;
-        width: 2000px;
-        height: 1500px;
-        border: solid 50px red;
+        width: 150%;
+        height: 130%;
         position: absolute;
-        /* top: 50%; */
-        /* left: 50%; */
-        /* transform: translate(-1410px, -1175px); */
         will-change: transform;
-        background: linear-gradient(45deg, #262626 25%, transparent 25%),
+        /* background: linear-gradient(45deg, #262626 25%, transparent 25%),
           linear-gradient(-45deg, #262626 25%, transparent 25%),
           linear-gradient(45deg, transparent 75%, #262626 75%),
           linear-gradient(-45deg, transparent 75%, #262626 75%);
         background-size: 100px 100px;
-        background-position: 0 0, 50px 50px;
+        background-position: 0 0, 50px 50px; */
+        background-color: blue;
+        opacity: 0.6;
+        pointer-events: none;
       }
 
-      .box {
-        /* transition: all 1.5s cubic-bezier(0.25, 0.1, 0.25, 1); */
-        /* transition: all 3s ease; */
-
+      .content .box {
+        width: 200px;
+        height: 200px;
+        top: 300px;
+        left: 400px;
         position: relative;
-        width: 100px;
-        height: 100px;
-        background-color: blue;
+        background-color: yellow;
+        z-index: 1;
+      }
+
+      .box:hover {
+        background-color: red;
+      }
+
+      #mouse {
+        width: 5px;
+        height: 5px;
+        color: white;
+        position: fixed;
+        background-color: black;
+        top: 0;
+        left: 0;
+        position: relative;
+      }
+
+      #mouse span {
+        width: 200px;
+        left: -50px;
+        top: 10px;
+        position: absolute;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="content" data-depth="0.2" data-scalar-x="10"></div>
-      <div class="box"></div>
+      <div class="content" data-depth="0.2" data-scalar-x="10">
+        <div class="box"></div>
+      </div>
+    </div>
+    <div id="mouse">
+      <span></span>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.1/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/victor/1.1.0/victor.min.js"></script>
