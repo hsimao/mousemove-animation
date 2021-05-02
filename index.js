@@ -96,7 +96,6 @@ class MoveSpace {
   }
 
   removeListener() {
-    console.log("removeListener");
     this.viewContent.removeEventListener(
       "mousemove",
       this.handleMouseMove,
