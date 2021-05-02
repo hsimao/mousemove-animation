@@ -1,91 +1,108 @@
-const box = document.querySelector(".box");
-const content = document.querySelector(".content");
+const $container = document.querySelector(".container");
+const $content = document.querySelector(".content");
+const $body = document.querySelector("body");
 
-const mouseVector = new Victor(0, 0);
+class MoveSpace {
+  constructor(fullContent, viewContent) {
+    this.body = document.querySelector("body");
+    this.fullContent = fullContent;
+    this.viewContent = viewContent;
+    this.init();
+  }
 
-console.warn("mouseVector", mouseVector);
+  init() {
+    this.onListener();
+  }
 
-const debounce = (fn, ms) => {
-  let timeout;
-  return function (args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(args), ms);
+  destroy() {
+    this.removeListener();
+  }
+
+  makeRang(min, max, bands, n) {
+    return Math.floor((bands * (n - min)) / (max - min + 1));
+  }
+
+  getOffsetByRang(value, min, max, count) {
+    const band = (n) => this.makeRang(min, max, count, n);
+    return band(value);
+  }
+
+  getViewContentCenter() {
+    const { offsetX, offsetY } = this.getOffset(
+      this.fullContent,
+      this.viewContent
+    );
+    return {
+      centerX: this.fullContent.clientWidth / 2 - offsetX / 2,
+      centerY: this.fullContent.clientHeight / 2 - offsetY / 2
+    };
+  }
+
+  getOffset(dom1, dom2) {
+    return {
+      offsetX: dom1.clientWidth - dom2.clientWidth,
+      offsetY: dom1.clientHeight - dom2.clientHeight
+    };
+  }
+
+  moveFullContent(currentX, currentY, rangOffsetX, rangOffsetY) {
+    const { centerX, centerY } = this.getViewContentCenter();
+
+    let finalOffsetX = rangOffsetX;
+    let finalOffsetY = rangOffsetY;
+
+    if (currentX >= centerX) {
+      finalOffsetX = finalOffsetX * -1;
+    }
+
+    if (currentY >= centerY) {
+      finalOffsetY = finalOffsetY * -1;
+    }
+
+    this.fullContent.style.left = `${-rangOffsetX}px`;
+    this.fullContent.style.top = `${-rangOffsetY}px`;
+  }
+
+  handleMouseMove = (event) => {
+    const { offsetX: offsetXByBody, offsetY: offsetYByBody } = this.getOffset(
+      this.body,
+      this.viewContent
+    );
+    const innerX = event.clientX - offsetXByBody / 2;
+    const innerY = event.clientY - offsetYByBody / 2;
+
+    const { offsetX, offsetY } = this.getOffset(
+      this.fullContent,
+      this.viewContent
+    );
+    const rangOffsetX = this.getOffsetByRang(
+      innerX,
+      0,
+      this.viewContent.clientWidth,
+      offsetX
+    );
+    const rangOffsetY = this.getOffsetByRang(
+      innerY,
+      0,
+      this.viewContent.clientHeight,
+      offsetY
+    );
+
+    this.moveFullContent(innerX, innerY, rangOffsetX, rangOffsetY);
   };
-};
 
-let position = {
-  x: 0,
-  y: 0,
-};
+  onListener() {
+    this.viewContent.addEventListener("mousemove", this.handleMouseMove, false);
+  }
 
-console.warn("content", content.clientWidth);
-
-const handleMouseMove = (event) => {
-  const { pageX, pageY } = event;
-
-  const distance = getDistance(position.x, position.y, pageX, pageY);
-  const currentVictor = new Victor(pageX, pageY);
-  const x = currentVictor.x - mouseVector.x;
-  const y = currentVictor.y - mouseVector.y;
-  console.warn("currentVictor.x", currentVictor.x);
-  console.warn("mouseVector.x", mouseVector.x);
-
-  // const distanceVector = mouseVector.distance(new Victor(pageX, pageY));
-
-  mouseVector.add(new Victor(x, y));
-  console.warn("mouseVector.x after", mouseVector.x);
-
-  console.warn("pageX", pageX);
-  console.warn("distanceVector", mouseVector.distance(new Victor(x, y)));
-  console.warn("distance", distance);
-
-  position.x = pageX;
-  position.y = pageY;
-
-  gsap.to(content, {
-    x: mouseVector.x,
-    y: mouseVector.y,
-    ease: Power2.easeOut,
-    duration: 4,
-  });
-
-  // content.style.transform = `translate(${mouseVector.x}px, ${mouseVector.y}px)`;
-
-  // box.style.left = `${pageX}px`;
-  // box.style.top = `${pageY}px`;
-  // gsap.to(box, {
-  //   x: pageX,
-  //   y: pageY,
-  //   ease: Power2.easeOut,
-  //   duration: 4,
-  // });
-};
-window.addEventListener("mousemove", debounce(handleMouseMove, 50));
-
-function handleUpdatePosition(event) {
-  const { pageX, pageY } = event;
-  const result = getDistance(position.x, position.y, pageX, pageY);
-  console.warn("result", result);
-
-  position.x = pageX;
-  position.y = pageY;
-  console.warn("position", position);
+  removeListener() {
+    console.log("removeListener");
+    this.viewContent.removeEventListener(
+      "mousemove",
+      this.handleMouseMove,
+      false
+    );
+  }
 }
 
-window.addEventListener("click", handleUpdatePosition);
-
-function getDistance(x1, y1, x2, y2) {
-  const a = x1 - x2;
-  const b = y1 - y2;
-  var result = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-
-  return result;
-}
-
-function getPositon(x, y, distance) {
-  const a = x1 - x2;
-  const b = y1 - y2;
-  var result = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-
-  return result;
-}
+const moveSpace = new MoveSpace($content, $container);
